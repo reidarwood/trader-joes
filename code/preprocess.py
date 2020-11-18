@@ -1,4 +1,4 @@
-
+import pandas
 
 def get_data(filename):
     """
@@ -7,4 +7,4 @@ def get_data(filename):
     :param filename: path to the file
     :return: pandas dataframe of the file
     """
-    
+    return pandas.read_csv(filename)
