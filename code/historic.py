@@ -4,9 +4,7 @@ import tensorflow as tf
 class Historic(tf.keras.Model):
     def __init__(self):
         """
-        The Model class predicts the next words in a sequence.
-
-        :param vocab_size: The number of unique words in the data
+        The Model class predicts future stock market prices given historic data
         """
         super(Historic, self).__init__()
         
