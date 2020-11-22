@@ -13,8 +13,26 @@ def train(model, data, days):
     :param days: how many days out the model should predict
     :return: None
     """
-    # Get labels and inputs
-    # Batch and train
+    train_data = data.iloc[:-days]
+    train_labels = data.iloc[days:]
+    train_data = tf.convert_to_tensor(train_data)
+    print(train_labels)
+    train_labels = tf.convert_to_tensor(train_labels["Close"])
+    cell_state = None
+    for i in range(0, train_data.shape[0], model.batch_size):
+        batch = train_data[i:i + model.batch_size, :]
+        label = train_labels[i:i + model.batch_size]
+        
+        
+        with tf.GradientTape() as tape:
+            predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
+            loss = model.loss(predictions, tf.expand_dims(label, 0))
+            
+        if i//model.batch_size % 10 == 0:
+             print("Perplexity on training set after {} training steps: {}".format(i//model.batch_size, np.exp(loss)))
+
+        gradients = tape.gradient(loss, model.trainable_variables)
+        model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     pass
 
 def test(model, data, days):
@@ -32,15 +50,13 @@ def main():
     # Example code to train on Dow
     data = get_data("../data/^DJI.csv")
     print("Training on the Dow Jones Industrial Average")
-    data.head()
-    # split up the data to training and testing data
-    # train_data = data
-    # test_data = data
-    # 
-    # model = Historic()
-    # train(model, train_data, 10)
-    # print("Accuracy: {}".format(test(model, test_data, 10)))
-
+    dates = data.pop("Date")
+    # train_data = data.iloc[:-1]
+    # train_labels = data.iloc[1:]
+    
+    model = Historic()
+    
+    train(model, data, 5)
 
 if __name__ == '__main__':
     main()

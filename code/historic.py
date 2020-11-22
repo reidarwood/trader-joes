@@ -7,15 +7,19 @@ class Historic(tf.keras.Model):
         The Model class predicts future stock market prices given historic data
         """
         super(Historic, self).__init__()
+        self.learning_rate = 0.0001
+        self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
+        self.batch_size = 64
         
         # No idea on the architecture
-        self.lstm1 = tf.keras.layers.LSTM(64, return_sequences=True, return_state=True)
-        self.lstm2 = tf.keras.layers.LSTM(32, return_sequences=True, return_state=True)
-        self.D1 = tf.keras.layers.Dense(4)
+        self.lstm1 = tf.keras.layers.LSTM(64, return_sequences=True, return_state=True, activation='relu')
+        # self.lstm2 = tf.keras.layers.LSTM(32, return_sequences=True, return_state=True)
+        # self.D1 = tf.keras.layers.Dense(16, activation='relu')
+        self.D2 = tf.keras.layers.Dense(1)
         
 
 
-    def call(self, inputs, initial_state1=None, initial_state2=None):
+    def call(self, inputs, initial_state=None):
         """
         - You must use an embedding layer as the first layer of your network (i.e. tf.nn.embedding_lookup)
         - You must use an LSTM or GRU as the next layer.
@@ -28,10 +32,11 @@ class Historic(tf.keras.Model):
         """
         
         # No clue if this actually works
-        layer1_out, state_h1, state_c1 = self.lstm1(inputs)
-        layer2_out, state_h2, state_c2 = self.lstm2(layer1_out)
-        dense_out = self.D1(layer2_out)
-        return dense_out, (state_h1, state_c1), (state_h2, state_c2)
+        layer1_out, state_h1, state_c1 = self.lstm1(inputs, initial_state=initial_state)
+        # layer2_out = self.D1(layer1_out)
+        
+        dense_out = self.D2(layer1_out)
+        return dense_out, (state_h1, state_c1)
 
     def loss(self, outputs, labels):
         """
@@ -43,6 +48,9 @@ class Historic(tf.keras.Model):
         :param labels: matrix of shape (batch_size, window_size) containing the labels
         :return: the loss of the model as a tensor of size 1
         """
-        loss = tf.keras.losses.MSE(labels, outputs)
+        loss = tf.keras.losses.MAE(labels, outputs)
+        # print(labels)
+        # print(outputs)
+        
         loss = tf.reduce_mean(loss)
         return loss
