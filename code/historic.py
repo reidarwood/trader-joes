@@ -12,7 +12,7 @@ class Historic(tf.keras.Model):
         self.batch_size = 64
         
         # No idea on the architecture
-        self.lstm1 = tf.keras.layers.LSTM(64, return_sequences=True, return_state=True, activation='relu')
+        self.lstm1 = tf.keras.layers.LSTM(64, return_sequences=True, return_state=True)
         # self.lstm2 = tf.keras.layers.LSTM(32, return_sequences=True, return_state=True)
         # self.D1 = tf.keras.layers.Dense(16, activation='relu')
         self.D2 = tf.keras.layers.Dense(1)

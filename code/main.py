@@ -1,8 +1,9 @@
-from preprocess import get_data
+from preprocess import get_data, download_all_data
 import pandas
 import tensorflow as tf
 import numpy as np
 from historic import Historic
+import argparse
 
 def train(model, data, days):
     """
@@ -46,7 +47,11 @@ def test(model, data, days):
     """
     pass
 
-def main():
+def main(arguments):
+    
+    if arguments.download_data:
+        download_all_data()
+        return
     # Example code to train on Dow
     data = get_data("../data/^DJI.csv")
     print("Training on the Dow Jones Industrial Average")
@@ -59,4 +64,9 @@ def main():
     train(model, data, 5)
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--download-data",
+                        help="Download data from /data/stocks.txt",
+                        action="store_true")
+    arguments = parser.parse_args()
+    main(arguments)

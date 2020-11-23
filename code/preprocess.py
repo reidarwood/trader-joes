@@ -1,9 +1,12 @@
 import pandas
 from alpha_vantage.timeseries import TimeSeries
+import time
 
 api_key = 'A759HSE0DRDPALHC'
-path_to_data = "../data/"
+path_to_data = "../data/stocks/"
+
 ts = TimeSeries(key=api_key, output_format='pandas')
+
 def install_data(stock_ticker):
     file_path = path_to_data + stock_ticker + ".csv"
     data, meta_data = ts.get_daily(symbol=stock_ticker, outputsize='full')
@@ -20,4 +23,12 @@ def get_data(filename):
     """
     return pandas.read_csv(filename)
 
-install_data("AAPL")
+def download_all_data():
+    """
+    Downloads all of the stocks given in ../data/stocks.txt and saves them as csv files.
+    
+    """
+    file = open("../data/stocks.txt", 'r')
+    for l in file:
+        install_data(l.strip())
+        time.sleep(12.1)
