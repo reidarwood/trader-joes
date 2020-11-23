@@ -1,1 +1,5 @@
 **/env/
+*.csv
+!^DJI.csv
+!^GSPC.csv
+!^IXIC.csv
