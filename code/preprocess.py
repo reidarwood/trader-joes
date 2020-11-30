@@ -21,18 +21,10 @@ def get_data_paths():
     return stock_files
     
 
-def normalize(df : pandas.DataFrame):
-    """
-    
-    """
-    df = df.drop(columns="Date")
-    df = df / df.max(0)
-    return df
-
 def clean_data():
     """
     Renames all of the column names in the stock files for clarity and to match
-    the index funds
+    the index funds. Additionally reverses so the rows go from oldest to newest
     """
     rename_mapping = {"date": "Date",
                       "1. open": "Open",
@@ -45,14 +37,29 @@ def clean_data():
     for filename in stocks:
         df = pandas.read_csv(filename)
         df = df.rename(columns=rename_mapping)
+        df = reverse_df(df)
         df.to_csv(filename, index=False)
-    return
 
 def install_data(stock_ticker):
+    """
+    Gets stock data given the stock ticker using alpha vantage. Saves data as csv
+    
+    :param stock_ticker: String of the stock ticker to download
+    :return: None
+    """
     file_path = path_to_data + stock_ticker + ".csv"
     data, meta_data = ts.get_daily(symbol=stock_ticker, outputsize='full')
     data.to_csv(file_path)
     
+def reverse_df(df):
+    """
+    Reverses a dataframe
+    
+    :param df: pandas dataframe to be reversed
+    :return: reversed dataframe
+    """
+    df = df[::-1]
+    return df
 
 def get_data(filename):
     """
@@ -64,6 +71,12 @@ def get_data(filename):
     return pandas.read_csv(filename)
 
 def get_all_stocks():
+    """
+    Function that gets a list of all the stocks
+    
+    :return: python list of tuples. Each tuple has stock ticker in first slot, and 
+             pandas dataframe of the values in the secon slot
+    """
     file = open("../data/stocks.txt", 'r')
     l = []
     for stock in file:
