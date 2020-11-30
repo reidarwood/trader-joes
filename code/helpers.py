@@ -72,3 +72,16 @@ def split_on_date(df : pd.DataFrame, date):
     train = df.iloc[:index]
     test = df.iloc[index:]
     return train, test
+
+def join(stock_data, covid_data):
+    """
+    
+    """
+    print(covid_data)
+    print(stock_data)
+    # stock_data.Date = pd.to_datetime(stock_data.Date)
+    # covid_data.Date = pd.to_datetime(covid_data.Date)
+    data = [stock_data, covid_data]
+    df = pd.merge(stock_data, covid_data, how='inner', on='Date')
+    print(df)
+    return df

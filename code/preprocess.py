@@ -4,8 +4,11 @@ import time
 
 api_key = 'A759HSE0DRDPALHC'
 path_to_data = "../data/stocks/"
-
 ts = TimeSeries(key=api_key, output_format='pandas')
+
+def get_covid_data():
+    df = get_data("../data/covid.csv")
+    return df
 
 def get_data_paths():
     """

@@ -1,5 +1,5 @@
-from preprocess import get_data, download_all_data, get_all_stocks, clean_data
-from helpers import split_on_date, normalize, train, test
+from preprocess import get_data, download_all_data, get_all_stocks, clean_data, get_covid_data
+from helpers import split_on_date, normalize, train, test, join
 import pandas
 import tensorflow as tf
 import numpy as np
@@ -13,12 +13,14 @@ def main(arguments):
         print("Downloaded Data!")
         clean_data()
         print("Cleaned Data")
-    
+    covid_data = get_covid_data()
     model = Historic()
     stocks = get_all_stocks()
+    
     for stock in stocks:
         data = stock[1]
-        
+        data = join(data, covid_data)
+        break
         train_data, test_data = split_on_date(data, "2019-01-02")
         data = normalize(train_data)
         print("Ticker:", stock[0])
