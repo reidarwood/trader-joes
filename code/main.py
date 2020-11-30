@@ -20,11 +20,15 @@ def main(arguments):
     for stock in stocks:
         data = stock[1]
         data = join(data, covid_data)
-        break
-        train_data, test_data = split_on_date(data, "2019-01-02")
-        data = normalize(train_data)
         print("Ticker:", stock[0])
+        # print(data)
+        data = normalize(data)
+        # train_data, test_data = split_on_date(data, "2019-01-02")
+        # print(data)
+        # break
+        
         train(model, data, 20)
+        
     
 
 if __name__ == '__main__':

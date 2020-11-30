@@ -35,7 +35,7 @@ def train(model, data, days):
         with tf.GradientTape() as tape:
             predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
             loss = model.loss(predictions, tf.expand_dims(label, 0))
-            
+        
         if i//model.batch_size % 10 == 0:
              print("Loss on training set after {} training steps: {}".format(i//model.batch_size, loss))
 
@@ -75,13 +75,9 @@ def split_on_date(df : pd.DataFrame, date):
 
 def join(stock_data, covid_data):
     """
-    
+    Joins covid data with stock data on the Date key
     """
-    print(covid_data)
-    print(stock_data)
-    # stock_data.Date = pd.to_datetime(stock_data.Date)
-    # covid_data.Date = pd.to_datetime(covid_data.Date)
     data = [stock_data, covid_data]
     df = pd.merge(stock_data, covid_data, how='inner', on='Date')
-    print(df)
+    df = df.fillna(0)
     return df
