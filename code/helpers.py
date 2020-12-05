@@ -88,7 +88,6 @@ def split_on_date(df : pd.DataFrame, date):
     :return: pandas df of data from before date
     :return: pandas df of data from after date
     """
-    print(df.index[df["Date"]==date])
     index = df.index[df["Date"]==date].to_list()[0]
     train = df.iloc[:index]
     test = df.iloc[index:]
