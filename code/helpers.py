@@ -8,9 +8,29 @@ def test(model, data, days):
     :param model: the model to test
     :param data: pandas dataframe with the data to test on
     :param days: how many days out the model should predict
-    :return: tuple of MAE, RMSE
+    :return: tuple of MAPE, RMSE
     """
-    pass
+    test_data = data.iloc[:-days]
+    test_labels = data.iloc[days:]
+    test_data = tf.convert_to_tensor(test_data)
+    test_labels = tf.convert_to_tensor(test_labels["Adjusted Close"])
+    cell_state = None
+    
+    losses = 0
+    accuracies = 0
+    for i in range(0, test_data.shape[0], model.batch_size):
+        batch = test_data[i:i + model.batch_size, :]
+        label = test_labels[i:i + model.batch_size]
+        
+        predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
+        loss = model.loss(predictions, tf.expand_dims(label, 0))
+        losses += loss
+
+        if i//model.batch_size % 10 == 0:
+             print("Loss on testing set after {} steps: {}".format(i//model.batch_size, loss))
+    
+    losses = losses / model.batch_size
+    return losses # MAPE and RMSE?
 
 def train(model, data, days):
     """
@@ -68,6 +88,7 @@ def split_on_date(df : pd.DataFrame, date):
     :return: pandas df of data from before date
     :return: pandas df of data from after date
     """
+    print(df.index[df["Date"]==date])
     index = df.index[df["Date"]==date].to_list()[0]
     train = df.iloc[:index]
     test = df.iloc[index:]
