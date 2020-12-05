@@ -14,7 +14,7 @@ def test(model, data, days):
 
 def train(model, data, days):
     """
-    Trains a model to predict __days___ in advance for one epoch
+    Trains a model to predict __days__ in advance for one epoch
     
     :param model: the model to train
     :param data: pandas dataframe with the data to train on
@@ -24,7 +24,7 @@ def train(model, data, days):
     train_data = data.iloc[:-days]
     train_labels = data.iloc[days:]
     train_data = tf.convert_to_tensor(train_data)
-    train_labels = tf.convert_to_tensor(train_labels["Close"])
+    train_labels = tf.convert_to_tensor(train_labels["Adjusted Close"])
     cell_state = None
     
     for i in range(0, train_data.shape[0], model.batch_size):
@@ -36,12 +36,11 @@ def train(model, data, days):
             predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
             loss = model.loss(predictions, tf.expand_dims(label, 0))
         
-        if i//model.batch_size % 10 == 0:
+        if i//model.batch_size % 1 == 0:
              print("Loss on training set after {} training steps: {}".format(i//model.batch_size, loss))
 
         gradients = tape.gradient(loss, model.trainable_variables)
         model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    pass
 
 def normalize(df : pd.DataFrame):
     """
@@ -56,6 +55,7 @@ def normalize(df : pd.DataFrame):
     # Can add back the date column if needed
     df = df.drop(columns="Date")
     df = df / df.max(0)
+    df = df.fillna(0)
     return df
 
 def split_on_date(df : pd.DataFrame, date):

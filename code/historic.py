@@ -45,7 +45,7 @@ class Historic(tf.keras.Model):
         :param labels: matrix of shape (batch_size, window_size) containing the labels
         :return: the loss of the model as a tensor of size 1
         """
-        loss = tf.keras.losses.MAE(labels, outputs)
+        loss = tf.keras.losses.MAPE(labels, outputs)
         
         loss = tf.reduce_mean(loss)
         return loss

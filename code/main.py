@@ -16,17 +16,12 @@ def main(arguments):
     covid_data = get_covid_data()
     model = Historic()
     stocks = get_all_stocks()
-    
     for stock in stocks:
         data = stock[1]
         data = join(data, covid_data)
         print("Ticker:", stock[0])
-        # print(data)
         data = normalize(data)
-        # train_data, test_data = split_on_date(data, "2019-01-02")
-        # print(data)
-        # break
-        
+        # print(data[0:5]["Dividend Amount"])
         train(model, data, 20)
         
     
