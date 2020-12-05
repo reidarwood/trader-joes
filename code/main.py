@@ -16,16 +16,19 @@ def main(arguments):
     covid_data = get_covid_data()
     model = Historic()
     stocks = get_all_stocks()
-    for stock in stocks:
-        data = stock[1]
-        data = join(data, covid_data)
-        print("Ticker:", stock[0])
-        data = normalize(data)
-        # print(data[0:5]["Dividend Amount"])
-        train(model, data, 20)
+    for i in range(0, model.num_epochs):
+        for stock in stocks:
+            data = stock[1]
+            data = join(data, covid_data)
+            print("Ticker:", stock[0])
+            #print(data[0:5]["Dividend Amount"])
+            train_data, test_data = split_on_date(data, "2020-04-01")
+            train_data = normalize(train_data)
+            test_data = normalize(test_data)
+            train(model, train_data, 20)
+            loss = test(model, test_data, 20)
+            print(loss)
         
-    
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--download-data",
