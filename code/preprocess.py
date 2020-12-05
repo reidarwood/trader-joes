@@ -109,7 +109,8 @@ def download_all_data():
     """
     file = open("../data/stocks.txt", 'r')
     for l in file:
-        if l >= "WU":
-            print("Downloaded:", l.strip())
-            install_data(l.strip())
-            time.sleep(12.1)
+        if os.path.exists("../data/stocks/"+l.strip()+".csv"):
+            continue
+        print("Downloaded:", l.strip())
+        install_data(l.strip())
+        time.sleep(12.1)
