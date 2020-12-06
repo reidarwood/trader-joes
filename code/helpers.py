@@ -18,18 +18,20 @@ def test(model, data, days):
     
     losses = 0
     accuracies = 0
+    total = 0
     for i in range(0, test_data.shape[0], model.batch_size):
         batch = test_data[i:i + model.batch_size, :]
         label = test_labels[i:i + model.batch_size]
         
         predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
         loss = model.loss(predictions, tf.expand_dims(label, 0))
+        total += 1
         losses += loss
 
         if i//model.batch_size % 10 == 0:
              print("Loss on testing set after {} steps: {}".format(i//model.batch_size, loss))
     
-    losses = losses / model.batch_size
+    losses = losses / total
     return losses # MAPE and RMSE?
 
 def train(model, data, days):
