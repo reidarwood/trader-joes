@@ -1,6 +1,8 @@
 import pandas as pd
 from alpha_vantage.timeseries import TimeSeries
+from helpers import normalize, join
 import time
+import random
 import os
 
 api_key = 'A759HSE0DRDPALHC'
@@ -50,12 +52,11 @@ def clean_data():
     stocks = get_data_paths()
     
     for filename in stocks:
-        if os.path.exists(filename):
-            df = pd.read_csv(filename)
-            df = df.rename(columns=rename_mapping)
-            # df = adjust_for_splits(df)
-            df = reverse_df(df)
-            df.to_csv(filename, index=False)
+        df = pd.read_csv(filename)
+        df = df.rename(columns=rename_mapping)
+        # df = adjust_for_splits(df)
+        df = reverse_df(df)
+        df.to_csv(filename, index=False)
 
 def install_data(stock_ticker):
     """
@@ -88,7 +89,7 @@ def get_data(filename):
     """
     return pd.read_csv(filename)
 
-def get_all_stocks():
+def get_all_stocks(covid_data):
     """
     Function that gets a list of all the stocks
     
@@ -99,9 +100,14 @@ def get_all_stocks():
     l = []
     for stock in file:
         path = path_to_data + stock.strip() + ".csv"
-        if os.path.exists(path):
-            l.append((stock, get_data(path)))
-    return l
+        data = get_data(path)
+        data = join(data, covid_data)
+        data = normalize(data)
+        l.append((stock, data))
+    random.shuffle(l)
+    train_data = l[:450]
+    test_data = l[450:]
+    return train_data, test_data
 
 def download_all_data():
     """
@@ -109,8 +115,6 @@ def download_all_data():
     """
     file = open("../data/stocks.txt", 'r')
     for l in file:
-        if os.path.exists("../data/stocks/"+l.strip()+".csv"):
-            continue
         print("Downloaded:", l.strip())
         install_data(l.strip())
         time.sleep(12.1)

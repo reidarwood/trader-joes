@@ -10,7 +10,7 @@ class Historic(tf.keras.Model):
         self.learning_rate = 0.0001
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
         self.batch_size = 64
-        self.num_epochs = 3
+        self.num_epochs = 10
         
         self.lstm1 = tf.keras.layers.LSTM(64, return_sequences=True, return_state=True)
         self.D2 = tf.keras.layers.Dense(1)

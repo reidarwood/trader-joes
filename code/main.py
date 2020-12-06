@@ -15,19 +15,19 @@ def main(arguments):
         print("Cleaned Data")
     covid_data = get_covid_data()
     model = Historic()
-    stocks = get_all_stocks()
+    train_data, test_data = get_all_stocks(covid_data)
+    
     for i in range(0, model.num_epochs):
-        for stock in stocks:
-            data = stock[1]
-            data = join(data, covid_data)
-            print("Ticker:", stock[0])
-            #print(data[0:5]["Dividend Amount"])
-            train_data, test_data = split_on_date(data, "2020-04-01")
-            train_data = normalize(train_data)
-            test_data = normalize(test_data)
-            train(model, train_data, 20)
-            loss = test(model, test_data, 20)
-            print(loss)
+        train(model, train_data, 20)
+        print(test(model, test_data, 20))
+        # for stock in stocks:
+        #     data = stock[1]
+        #     print("Ticker:", stock[0])
+        #     #print(data[0:5]["Dividend Amount"])
+        #     # train_data, test_data = split_on_date(data, "2020-04-01")
+        #     train(model, data, 20)
+        #     # loss = test(model, test_data, 20)
+        #     # print(loss)
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
