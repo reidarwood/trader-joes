@@ -104,6 +104,7 @@ def get_all_stocks(covid_data):
         data = join(data, covid_data)
         data = normalize(data)
         l.append((stock, data))
+    
     random.shuffle(l)
     train_data = l[:450]
     test_data = l[450:]

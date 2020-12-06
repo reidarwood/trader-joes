@@ -7,13 +7,15 @@ class Historic(tf.keras.Model):
         The Model class predicts future stock market prices given historic data
         """
         super(Historic, self).__init__()
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.001
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
         self.batch_size = 64
-        self.num_epochs = 10
+        self.num_epochs = 25
         
-        self.lstm1 = tf.keras.layers.LSTM(64, return_sequences=True, return_state=True)
-        self.D2 = tf.keras.layers.Dense(1)
+        self.lstm1 = tf.keras.layers.LSTM(128, return_sequences=True, return_state=True)
+        self.D1 = tf.keras.layers.Dense(32, activation="relu")
+        self.D2 = tf.keras.layers.Dense(32, activation="relu")
+        self.D3 = tf.keras.layers.Dense(1,  activation="sigmoid")
         
 
 
@@ -32,9 +34,10 @@ class Historic(tf.keras.Model):
         # No clue if this actually works
         layer1_out, state_h1, state_c1 = self.lstm1(inputs, initial_state=initial_state)
         # layer2_out = self.D1(layer1_out)
-        
-        dense_out = self.D2(layer1_out)
-        return dense_out, (state_h1, state_c1)
+        layer2_out = self.D1(layer1_out)
+        layer3_out = self.D2(layer2_out)
+        layer4_out = self.D3(layer3_out)
+        return layer4_out, (state_h1, state_c1)
 
     def loss(self, outputs, labels):
         """

@@ -36,8 +36,8 @@ def test(model, data, days):
             total += 1
             losses += loss
 
-            if i//model.batch_size % 3 == 0:
-                 print("Ticker:", stock[0], "Loss on testing set after {} steps: {}".format(i//model.batch_size, loss))
+            # if i//model.batch_size % 3 == 0:
+            #      print("Ticker:", stock[0], "Loss on testing set after {} steps: {}".format(i//model.batch_size, loss))
 
     losses = losses / total
     return losses # MAPE and RMSE?
@@ -49,14 +49,18 @@ def train(model, data, days):
     :param model: the model to train
     :param data: pandas dataframe with the data to train on
     :param days: how many days out the model should predict
-    :return: None
+    :return: MAPE on the training data
     """
+    total_loss = 0
+    num_batches = 0
     for stock in data:
         stock_data = stock[1]
         inputs = stock_data.iloc[:-days]
         labels = stock_data.iloc[days:]
         inputs = tf.convert_to_tensor(inputs)
         labels = tf.convert_to_tensor(labels["Adjusted Close"])
+        
+        # If we want to experiment with looking at embeddings, can here
         cell_state = None
 
         for i in range(0, inputs.shape[0], model.batch_size):
@@ -66,12 +70,16 @@ def train(model, data, days):
             with tf.GradientTape() as tape:
                 predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
                 loss = model.loss(predictions, tf.expand_dims(label, 0))
+            # print(cell_state)
+            # if i//model.batch_size % 3 == 0:
+            #      print("Ticker:", stock[0], "Loss on training set after {} training steps: {}".format(i//model.batch_size, loss))
 
-            if i//model.batch_size % 3 == 0:
-                 print("Ticker:", stock[0], "Loss on training set after {} training steps: {}".format(i//model.batch_size, loss))
+            total_loss += loss
+            num_batches += 1
 
             gradients = tape.gradient(loss, model.trainable_variables)
             model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+    return total_loss / num_batches
 
 def normalize(df : pd.DataFrame):
     """

@@ -18,8 +18,8 @@ def main(arguments):
     train_data, test_data = get_all_stocks(covid_data)
     
     for i in range(0, model.num_epochs):
-        train(model, train_data, 20)
-        print(test(model, test_data, 20))
+        print("EPOCH {} training loss: {}".format(i, train(model, train_data, 20)))
+        print("EPOCH {} Test loss: {}".format(i, test(model, train_data, 20)))
         # for stock in stocks:
         #     data = stock[1]
         #     print("Ticker:", stock[0])
