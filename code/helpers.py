@@ -5,6 +5,13 @@ physical_devices = tf.config.list_physical_devices("GPU")
 if physical_devices:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
+def apply_noise(tensor):
+    shape = tensor.shape
+    random_scale = tf.random.normal(shape, mean=1, stddev=0.1)
+    # print(random_scale)
+    return tensor * random_scale
+
+
 def test(model, data, days):
     """
     Tests a model on predicting __days__ in advance
@@ -14,33 +21,34 @@ def test(model, data, days):
     :param days: how many days out the model should predict
     :return: tuple of MAPE, RMSE
     """
-    losses = 0
-    accuracies = 0
-    total = 0
+    
+    total_loss = 0
+    num_batches = 0
+    for i in range(0, len(data), model.batch_size):
+        # create batches of model.batch_size
+        batch_data = data[i:i+model.batch_size]
+        batch_data = list(map(lambda x: x[1], batch_data))
+        inputs = list(map(lambda x: x.iloc[:-days], batch_data))
+        inputs = list(map(lambda x: tf.convert_to_tensor(x), inputs))
+        labels = list(map(lambda x: x.iloc[days:], batch_data))
+        labels = list(map(lambda x: x["Adjusted Close"], labels))
 
-    for stock in data:
-        stock_data = stock[1]
-        inputs = stock_data.iloc[:-days]
-        labels = stock_data.iloc[days:]
         inputs = tf.convert_to_tensor(inputs)
-        labels = tf.convert_to_tensor(labels["Adjusted Close"])
+        labels = tf.convert_to_tensor(labels)
+        labels = tf.expand_dims(labels, 2)
+
         cell_state = None
 
+        for j in range(0, inputs.shape[1], model.window_size):
+            batch = inputs[:,j:j+model.window_size, :]
+            label = labels[:,j:j+model.window_size]
 
-        for i in range(0, inputs.shape[0], model.batch_size):
-            batch = inputs[i:i + model.batch_size, :]
-            label = labels[i:i + model.batch_size]
+            predictions, cell_state = model(batch, cell_state)
+            loss = model.loss(predictions, label)
 
-            predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
-            loss = model.loss(predictions, tf.expand_dims(label, 0))
-            total += 1
-            losses += loss
-
-            # if i//model.batch_size % 3 == 0:
-            #      print("Ticker:", stock[0], "Loss on testing set after {} steps: {}".format(i//model.batch_size, loss))
-
-    losses = losses / total
-    return losses # MAPE and RMSE?
+            total_loss += loss
+            num_batches += 1
+    return total_loss / num_batches
 
 def train(model, data, days):
     """
@@ -53,27 +61,29 @@ def train(model, data, days):
     """
     total_loss = 0
     num_batches = 0
-    for stock in data:
-        stock_data = stock[1]
-        inputs = stock_data.iloc[:-days]
-        labels = stock_data.iloc[days:]
+
+    for i in range(0, len(data), model.batch_size):
+        # create batches of model.batch_size
+        batch_data = data[i:i+model.batch_size]
+        batch_data = list(map(lambda x: x[1], batch_data))
+        inputs = list(map(lambda x: x.iloc[:-days], batch_data))
+        labels = list(map(lambda x: x.iloc[days:], batch_data))
+        labels = list(map(lambda x: x["Adjusted Close"], labels))
+        inputs = list(map(lambda x: tf.convert_to_tensor(x), inputs))
         inputs = tf.convert_to_tensor(inputs)
-        labels = tf.convert_to_tensor(labels["Adjusted Close"])
-        
-        # If we want to experiment with looking at embeddings, can here
+        labels = tf.convert_to_tensor(labels)
+        labels = tf.expand_dims(labels, 2)
+        labels = apply_noise(labels)
         cell_state = None
 
-        for i in range(0, inputs.shape[0], model.batch_size):
-            batch = inputs[i:i + model.batch_size, :]
-            label = labels[i:i + model.batch_size]
+        for j in range(0, inputs.shape[1], model.window_size):
+            batch = inputs[:,j:j+model.window_size, :]
+            label = labels[:,j:j+model.window_size]
 
             with tf.GradientTape() as tape:
-                predictions, cell_state = model(tf.expand_dims(batch, 0), cell_state)
-                loss = model.loss(predictions, tf.expand_dims(label, 0))
-            # print(cell_state)
-            # if i//model.batch_size % 3 == 0:
-            #      print("Ticker:", stock[0], "Loss on training set after {} training steps: {}".format(i//model.batch_size, loss))
-
+                predictions, cell_state = model(batch, cell_state)
+                loss = model.loss(predictions, label)
+            # print(loss)
             total_loss += loss
             num_batches += 1
 

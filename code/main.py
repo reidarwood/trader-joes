@@ -13,21 +13,19 @@ def main(arguments):
         print("Downloaded Data!")
         clean_data()
         print("Cleaned Data")
+    
     covid_data = get_covid_data()
     model = Historic()
-    train_data, test_data = get_all_stocks(covid_data)
-    
+    train_data, test_data = get_all_stocks(covid_data, random_seed=0)
+    losses = []
     for i in range(0, model.num_epochs):
-        print("EPOCH {} training loss: {}".format(i, train(model, train_data, 20)))
-        print("EPOCH {} Test loss: {}".format(i, test(model, train_data, 20)))
-        # for stock in stocks:
-        #     data = stock[1]
-        #     print("Ticker:", stock[0])
-        #     #print(data[0:5]["Dividend Amount"])
-        #     # train_data, test_data = split_on_date(data, "2020-04-01")
-        #     train(model, data, 20)
-        #     # loss = test(model, test_data, 20)
-        #     # print(loss)
+        train_loss = train(model, train_data, 20)
+        print("EPOCH {} training loss: {}".format(i, train_loss))
+        test_loss = test(model, test_data, 20)
+        losses.append(test_loss)
+        print("EPOCH {} Test loss: {}".format(i, test_loss))
+    print("Last 10 Epochs Average MAPE: {}".format(sum(losses[-10:]) / 10))
+    
         
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

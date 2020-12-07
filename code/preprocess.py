@@ -1,6 +1,6 @@
 import pandas as pd
 from alpha_vantage.timeseries import TimeSeries
-from helpers import normalize, join
+from helpers import normalize, join, split_on_date
 import time
 import random
 import os
@@ -89,7 +89,7 @@ def get_data(filename):
     """
     return pd.read_csv(filename)
 
-def get_all_stocks(covid_data):
+def get_all_stocks(covid_data=None, random_seed = None):
     """
     Function that gets a list of all the stocks
     
@@ -102,12 +102,15 @@ def get_all_stocks(covid_data):
         path = path_to_data + stock.strip() + ".csv"
         data = get_data(path)
         data = join(data, covid_data)
+        # data = split_on_date(data, "2020-01-06")[1]
+
         data = normalize(data)
         l.append((stock, data))
     
+    random.seed(random_seed)
     random.shuffle(l)
-    train_data = l[:450]
-    test_data = l[450:]
+    train_data = l[:449]
+    test_data = l[449:]
     return train_data, test_data
 
 def download_all_data():

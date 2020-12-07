@@ -9,13 +9,14 @@ class Historic(tf.keras.Model):
         super(Historic, self).__init__()
         self.learning_rate = 0.001
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
-        self.batch_size = 64
-        self.num_epochs = 25
+        self.batch_size = 50
+        self.window_size = 64
+        self.num_epochs = 250
         
         self.lstm1 = tf.keras.layers.LSTM(128, return_sequences=True, return_state=True)
         self.D1 = tf.keras.layers.Dense(32, activation="relu")
         self.D2 = tf.keras.layers.Dense(32, activation="relu")
-        self.D3 = tf.keras.layers.Dense(1,  activation="sigmoid")
+        self.D3 = tf.keras.layers.Dense(1,  activation="hard_sigmoid")
         
 
 
