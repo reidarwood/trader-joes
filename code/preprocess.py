@@ -129,8 +129,8 @@ def get_all_stocks(covid_data=None, random_seed = None):
     
     random.seed(random_seed)
     random.shuffle(l)
-    train_data = l[:449]
-    test_data = l[449:]
+    train_data = l[:450]
+    test_data = l[450:]
     return train_data, test_data
 
 def download_all_data():

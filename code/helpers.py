@@ -18,7 +18,7 @@ def apply_noise(tensor):
     """
 
     shape = tensor.shape
-    random_scale = tf.random.normal(shape, mean=1, stddev=0.05)
+    random_scale = tf.random.normal(shape, mean=1, stddev=0.08)
     return tensor * random_scale
 
 
