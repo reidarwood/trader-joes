@@ -1,14 +1,24 @@
 import pandas as pd
 import tensorflow as tf
 
+
+# Lines added since lstm didnt work for GPU originally
 physical_devices = tf.config.list_physical_devices("GPU")
 if physical_devices:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 def apply_noise(tensor):
+    """
+    Applies noise to a tensor by randomly scaling the value by some multiple.
+    Uses random normal scaling with mean 1 (scaling by factor of 1 is identity
+    function) and stddev=0.1
+
+    :param tensor: tensor to apply noise to
+    :return: the tensor with random scaling
+    """
+
     shape = tensor.shape
-    random_scale = tf.random.normal(shape, mean=1, stddev=0.1)
-    # print(random_scale)
+    random_scale = tf.random.normal(shape, mean=1, stddev=0.05)
     return tensor * random_scale
 
 
@@ -19,7 +29,7 @@ def test(model, data, days):
     :param model: the model to test
     :param data: python list of pandas dataframes with the data to test on
     :param days: how many days out the model should predict
-    :return: tuple of MAPE, RMSE
+    :return: Average MAPE across the data
     """
     
     total_loss = 0
@@ -69,7 +79,8 @@ def train(model, data, days):
         inputs = list(map(lambda x: x.iloc[:-days], batch_data))
         labels = list(map(lambda x: x.iloc[days:], batch_data))
         labels = list(map(lambda x: x["Adjusted Close"], labels))
-        inputs = list(map(lambda x: tf.convert_to_tensor(x), inputs))
+        inputs = list(map(lambda x: tf.convert_to_tensor(x, dtype="float32"), inputs))
+        inputs = list(map(lambda x: apply_noise(x), inputs))
         inputs = tf.convert_to_tensor(inputs)
         labels = tf.convert_to_tensor(labels)
         labels = tf.expand_dims(labels, 2)
@@ -125,6 +136,10 @@ def split_on_date(df : pd.DataFrame, date):
 def join(stock_data, covid_data):
     """
     Joins covid data with stock data on the Date key
+
+    :param stock_data: the data for a stock
+    :param covid_data: Historic COVID Data
+    :return: pandas df of the two dataframes after an inner join on the "Date" key
     """
     data = [stock_data, covid_data]
     df = pd.merge(stock_data, covid_data, how='inner', on='Date')

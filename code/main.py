@@ -7,23 +7,28 @@ from historic import Historic
 import argparse
 
 def main(arguments):
-    
+    """
+    Main function to run the stock market tester
+    """
     if arguments.download_data:
         download_all_data()
         print("Downloaded Data!")
-        clean_data()
-        print("Cleaned Data")
-    
+        # clean_data()
+        # print("Cleaned Data")
+    DAYS_OUT = 20
     covid_data = get_covid_data()
     model = Historic()
     train_data, test_data = get_all_stocks(covid_data, random_seed=0)
     losses = []
+
     for i in range(0, model.num_epochs):
-        train_loss = train(model, train_data, 20)
+        train_loss = train(model, train_data, DAYS_OUT)
         print("EPOCH {} training loss: {}".format(i, train_loss))
-        test_loss = test(model, test_data, 20)
-        losses.append(test_loss)
+
+        test_loss = test(model, test_data, DAYS_OUT)
         print("EPOCH {} Test loss: {}".format(i, test_loss))
+
+        losses.append(test_loss)
     print("Last 10 Epochs Average MAPE: {}".format(sum(losses[-10:]) / 10))
     
         

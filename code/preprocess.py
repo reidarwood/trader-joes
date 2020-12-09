@@ -10,6 +10,11 @@ path_to_data = "../data/stocks/"
 ts = TimeSeries(key=api_key, output_format='pandas')
 
 def get_covid_data():
+    """
+    Gets the covid data located in covid.csv in data folder
+
+    :return: pandas df of the covid data
+    """
     df = get_data("../data/covid.csv")
     return df
 
@@ -29,6 +34,8 @@ def get_data_paths():
 def adjust_for_splits(df : pd.DataFrame):
     """
     Adjusts stock price based on the stock splits
+
+    NOTE NOT USED AS WE USE "Adjusted price"
     """
     print(df)
     print(df['Split Coefficient'].cumprod())
@@ -65,9 +72,22 @@ def install_data(stock_ticker):
     :param stock_ticker: String of the stock ticker to download
     :return: None
     """
+    rename_mapping = {"date": "Date",
+                      "1. open": "Open",
+                      "2. high": "High",
+                      "3. low": "Low",
+                      "4. close": "Close",
+                      "5. adjusted close": "Adjusted Close",
+                      "6. volume": "Volume",
+                      "7. dividend amount": "Dividend Amount",
+                      "8. split coefficient": "Split Coefficient"}
+    
     file_path = path_to_data + stock_ticker + ".csv"
     data, meta_data = ts.get_daily_adjusted(symbol=stock_ticker, outputsize='full')
-    # print(data)
+
+    # cleans the data for standardization
+    data = data.rename(columns=rename_mapping)
+    data = reverse_df(data)
     data.to_csv(file_path)
     
 def reverse_df(df):

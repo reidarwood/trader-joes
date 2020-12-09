@@ -11,25 +11,25 @@ class Historic(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(self.learning_rate)
         self.batch_size = 50
         self.window_size = 64
-        self.num_epochs = 250
+        self.num_epochs = 128
+        self.rnn_size = 128
         
-        self.lstm1 = tf.keras.layers.LSTM(128, return_sequences=True, return_state=True)
-        self.D1 = tf.keras.layers.Dense(32, activation="relu")
+        self.lstm1 = tf.keras.layers.LSTM(self.rnn_size, return_sequences=True, return_state=True)
+        self.D1 = tf.keras.layers.Dense(64, activation="relu")
         self.D2 = tf.keras.layers.Dense(32, activation="relu")
-        self.D3 = tf.keras.layers.Dense(1,  activation="hard_sigmoid")
+        self.D3 = tf.keras.layers.Dense(1)
         
 
 
     def call(self, inputs, initial_state=None):
         """
-        - You must use an embedding layer as the first layer of your network (i.e. tf.nn.embedding_lookup)
-        - You must use an LSTM or GRU as the next layer.
+        Runs the model on inputs where inputs is a tensor and predicts the prices
+        given the labels
 
-        :param inputs: word ids of shape (batch_size, window_size)
+        :param inputs: Stock data as tensor (batch_size, window_size, data_size)
         :param initial_state: 2-d array of shape (batch_size, rnn_size) as a tensor
-        :return: the batch element probabilities as a tensor, a final_state (Note 1: If you use an LSTM, the final_state will be the last two RNN outputs, 
-        Note 2: We only need to use the initial state during generation)
-        using LSTM and only the probabilites as a tensor and a final_state as a tensor when using GRU 
+        :return: the batch predictions as a tensor  of size(batch_size, window_size, 1), 
+            final state of the LSTM which is list [state_h, state_c]
         """
         
         # No clue if this actually works
@@ -42,11 +42,10 @@ class Historic(tf.keras.Model):
 
     def loss(self, outputs, labels):
         """
-        Calculates average cross entropy sequence to sequence loss of the prediction
-        
-        NOTE: You have to use np.reduce_mean and not np.reduce_sum when calculating your loss
+        Calculates average loss across the batch. Uses MAPE so
+        not biased towards "cheap" stocks
 
-        :param logits: a matrix of shape (batch_size, window_size, vocab_size) as a tensor
+        :param outputs: a matrix of shape (batch_size, window_size) as a tensor
         :param labels: matrix of shape (batch_size, window_size) containing the labels
         :return: the loss of the model as a tensor of size 1
         """
