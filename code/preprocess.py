@@ -122,10 +122,12 @@ def get_all_stocks(covid_data=None, random_seed = None):
         path = path_to_data + stock.strip() + ".csv"
         data = get_data(path)
         data = join(data, covid_data)
-        # data = split_on_date(data, "2020-01-06")[1]
-
+        # data = split_on_date(data, "2020-01-22")[1]
+        data = data.drop(['Split Coefficient', 'Dividend Amount'], axis=1)
+        
+        
         data = normalize(data)
-        l.append((stock, data))
+        l.append((stock.strip(), data))
     
     random.seed(random_seed)
     random.shuffle(l)

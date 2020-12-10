@@ -1,11 +1,31 @@
 import pandas as pd
 import tensorflow as tf
+import numpy as np
 
 
 # Lines added since lstm didnt work for GPU originally
 physical_devices = tf.config.list_physical_devices("GPU")
 if physical_devices:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
+
+def predict(model, stock_data):
+    """
+    Predicts stock price for a given stock and model. Will predict
+    however many days out the model is trained on.
+
+    :param model: The model that predicts prices
+    :stock_data: pandas df of stock and covid data to predict on
+    """
+    cell_state = None
+    ret_predictions = []
+    for j in range(0, stock_data.shape[1], model.window_size):
+        batch = stock_data[:,j:j+model.window_size, :]
+        predictions, cell_state = model(batch, cell_state)
+        predictions = predictions.numpy()
+        predictions = predictions.flatten().tolist()
+        ret_predictions.extend(predictions)
+    return ret_predictions
+
 
 def apply_noise(tensor):
     """
@@ -20,6 +40,35 @@ def apply_noise(tensor):
     shape = tensor.shape
     random_scale = tf.random.normal(shape, mean=1, stddev=0.08)
     return tensor * random_scale
+
+def test_stock(model, data, days):
+    """
+    Tests a model on predicting __days__ in advance
+    
+    :param model: the model to test
+    :param data: Stock data as a pandas df
+    :param days: how many days out the model should predict
+    :return: Average MAPE across the data
+    """
+    cell_state = None
+    total_loss = 0
+    num_batches = 0
+
+    inputs = data.iloc[:-days]
+    inputs = tf.convert_to_tensor(inputs)
+    inputs = tf.expand_dims(inputs, 0)
+    labels = data.iloc[days:]
+    labels = labels["Adjusted Close"]
+    labels = tf.convert_to_tensor(labels)
+    labels = tf.expand_dims(labels, 0)
+    for j in range(0, inputs.shape[1], model.window_size):
+        batch = inputs[:,j:j+model.window_size, :]
+        label = labels[:,j:j+model.window_size]
+        predictions, cell_state = model(batch, cell_state)
+        loss = model.loss(predictions, label)
+        total_loss += loss
+        num_batches += 1
+    return total_loss / num_batches
 
 
 def test(model, data, days):

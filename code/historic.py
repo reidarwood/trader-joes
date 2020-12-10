@@ -14,10 +14,10 @@ class Historic(tf.keras.Model):
         self.num_epochs = 256
         self.rnn_size = 128
         
-        self.lstm1 = tf.keras.layers.LSTM(self.rnn_size, return_sequences=True, return_state=True)
-        self.D1 = tf.keras.layers.Dense(64, activation="relu")
-        self.D2 = tf.keras.layers.Dense(32, activation="relu")
-        self.D3 = tf.keras.layers.Dense(1, activation="relu")
+        self.lstm1 = tf.keras.layers.LSTM(self.rnn_size, return_sequences=True, return_state=True, kernel_initializer=tf.keras.initializers.RandomNormal(stddev=0.05))
+        self.D1 = tf.keras.layers.Dense(64, activation="relu", kernel_initializer=tf.keras.initializers.RandomNormal(stddev=0.05))
+        self.D2 = tf.keras.layers.Dense(32, activation="relu", kernel_initializer=tf.keras.initializers.RandomNormal(stddev=0.05))
+        self.D3 = tf.keras.layers.Dense(1, activation="relu", kernel_initializer=tf.keras.initializers.RandomNormal(stddev=0.05))
         
 
 
